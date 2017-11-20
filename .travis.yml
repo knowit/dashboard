@@ -15,7 +15,7 @@ install:
   - node --version
   - npm --version
   - npm install -g elm@0.18.0 elm-test@0.18.3 elm-format@exp
-  - elm make src/Main.elm --output=index.html
+  - elm make --yes src/Main.elm --output=index.html
 
 deploy:
   provider: pages
