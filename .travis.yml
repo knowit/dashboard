@@ -1,0 +1,25 @@
+sudo: false
+
+os:
+  - linux
+  - osx
+
+env:
+  matrix:
+    - TARGET_NODE_VERSION=node
+    - TARGET_NODE_VERSION=4.0
+
+install:
+  - nvm install $TARGET_NODE_VERSION
+  - nvm use $TARGET_NODE_VERSION
+  - node --version
+  - npm --version
+  - npm install -g elm@0.18.0 elm-test@0.18.3 elm-format@exp
+  - elm make --yes src/Main.elm --output=index.html
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
+  on:
+    branch: master
