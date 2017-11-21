@@ -10,11 +10,6 @@ cache:
 os:
   - linux
 
-env:
-  matrix:
-    - TARGET_NODE_VERSION=node
-    - TARGET_NODE_VERSION=4.0
-
 before_install:
   - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - | # epic build time improvement - see https://github.com/elm-lang/elm-compiler/issues/1473#issuecomment-245704142
@@ -28,8 +23,8 @@ before_install:
     fi
 
 install:
-  - nvm install $TARGET_NODE_VERSION
-  - nvm use $TARGET_NODE_VERSION
+  - nvm install node
+  - nvm use node
   - node --version
   - npm --version
   - npm install -g elm@0.18.0 elm-test@0.18.3 elm-format@exp
