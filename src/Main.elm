@@ -3,40 +3,18 @@ module Main exposing (..)
 import Html exposing (..)
 
 
---import Html.Attributes exposing (..)
---import Html.Events exposing (onClick)
-
-
 main : Program Never Model Msg
 main =
     Html.program
-        { init = init
+        { init = ( "", Cmd.none )
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
 
 
-
--- MODEL
-
-
 type alias Model =
-    {}
-
-
-initialModel : Model
-initialModel =
-    {}
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( initialModel, Cmd.none )
-
-
-
--- UPDATE
+    String
 
 
 type Msg
@@ -50,19 +28,9 @@ update msg model =
             ( model, Cmd.none )
 
 
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
-
--- VIEW
-
-
 view : Model -> Html Msg
 view model =
-    h1 [] [ text "Sundtkvartalet Dashboard" ]
+    div []
+        [ h1 [] [ text "Sundtkvartalet Dashboard" ]
+        , p [] [ text "Her skal vi vise frem nyttig info for folk som jobber i Sundkvartalet." ]
+        ]
