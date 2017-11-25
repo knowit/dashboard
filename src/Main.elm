@@ -6,6 +6,7 @@ import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (..)
 import Time exposing (every, second, Time)
+import EveryDict
 
 
 main : Program Never Model Msg
@@ -13,8 +14,7 @@ main =
     let
         initModel =
             { now = Nothing
-            , heimdalsgataDepartures = []
-            , gronlandDepartures = []
+            , departures = EveryDict.empty
             , errorMessage = Nothing
             }
     in
@@ -41,8 +41,7 @@ type Stop
 
 type alias Model =
     { now : Maybe Time
-    , heimdalsgataDepartures : List Departure
-    , gronlandDepartures : List Departure
+    , departures : EveryDict.EveryDict Stop (List Departure)
     , errorMessage : Maybe String
     }
 
@@ -67,10 +66,9 @@ type alias Departure =
 
 getAllDepartures : Cmd Msg
 getAllDepartures =
-    Cmd.batch
-        [ getDeparturesForStop Gronland
-        , getDeparturesForStop Heimdalsgata
-        ]
+    [ Heimdalsgata, Gronland ]
+        |> List.map getDeparturesForStop
+        |> Cmd.batch
 
 
 getDeparturesForStop : Stop -> Cmd Msg
@@ -117,12 +115,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DeparturesResponse stop (Ok departures) ->
-            case stop of
-                Heimdalsgata ->
-                    ( { model | heimdalsgataDepartures = departures, errorMessage = Nothing }, Cmd.none )
-
-                Gronland ->
-                    ( { model | gronlandDepartures = departures, errorMessage = Nothing }, Cmd.none )
+            ( { model
+                | departures =
+                    EveryDict.insert stop departures model.departures
+                , errorMessage = Nothing
+              }
+            , Cmd.none
+            )
 
         DeparturesResponse stop (Err error) ->
             ( { model | errorMessage = Just (toString error) }, Cmd.none )
@@ -148,25 +147,37 @@ view model =
             case model.now of
                 Just now ->
                     div []
-                        [ viewDepartures model.heimdalsgataDepartures now
-                            |> \t -> div [] [ h1 [] [ text "Heimdalsgata" ], t ]
-                        , viewDepartures model.gronlandDepartures now
-                            |> \t -> div [] [ h1 [] [ text "Grønland t-bane" ], t ]
-                        ]
+                        (model.departures
+                            |> EveryDict.toList
+                            |> List.map
+                                (\( stop, departures ) ->
+                                    viewDepartures stop departures now
+                                )
+                        )
 
                 Nothing ->
                     div [] []
 
 
-viewDepartures : List Departure -> Time -> Html Msg
-viewDepartures departures now =
-    departures
-        |> List.map (withTimeDelta now)
-        |> hideDeparturesInThePast
-        |> List.sortBy .timeDelta
-        |> List.take 6
-        |> List.map viewDeparture
-        |> table []
+viewDepartures : Stop -> List Departure -> Time -> Html Msg
+viewDepartures stop departures now =
+    let
+        stopLabel =
+            case stop of
+                Heimdalsgata ->
+                    "Heimdalsgata"
+
+                Gronland ->
+                    "Grønland t-bane"
+    in
+        departures
+            |> List.map (withTimeDelta now)
+            |> hideDeparturesInThePast
+            |> List.sortBy .timeDelta
+            |> List.take 6
+            |> List.map viewDeparture
+            |> table []
+            |> \t -> div [] [ h2 [] [ text stopLabel ], t ]
 
 
 hideDeparturesInThePast : List DepartureWithTimeDelta -> List DepartureWithTimeDelta
