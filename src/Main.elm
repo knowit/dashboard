@@ -137,6 +137,7 @@ view model =
                                 |> List.take 10
                                 |> List.map viewDeparture
                                 |> table []
+                                |> \t -> div [] [ h1 [] [ text "Heimdalsgata" ], t ]
 
                         Nothing ->
                             div [] []
