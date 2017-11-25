@@ -6,6 +6,7 @@ import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (..)
 import Time exposing (every, second, Time)
+import EveryDict
 
 
 main : Program Never Model Msg
@@ -13,12 +14,12 @@ main =
     let
         initModel =
             { now = Nothing
-            , departures = Nothing
+            , departures = EveryDict.empty
             , errorMessage = Nothing
             }
     in
         Html.program
-            { init = ( initModel, getDepartures Heimdalsgata )
+            { init = ( initModel, getAllDepartures )
             , view = view
             , update = update
             , subscriptions = subscriptions
@@ -35,11 +36,12 @@ subscriptions model =
 
 type Stop
     = Heimdalsgata
+    | Gronland
 
 
 type alias Model =
     { now : Maybe Time
-    , departures : Maybe (List Departure)
+    , departures : EveryDict.EveryDict Stop (List Departure)
     , errorMessage : Maybe String
     }
 
@@ -49,7 +51,7 @@ type alias DepartureWithTimeDelta =
 
 
 type Msg
-    = DeparturesResponse (Result Http.Error (List Departure))
+    = DeparturesResponse Stop (Result Http.Error (List Departure))
     | RefreshDepartures Time
     | UpdateNow Time
 
@@ -62,13 +64,23 @@ type alias Departure =
     }
 
 
-getDepartures : Stop -> Cmd Msg
-getDepartures stop =
+getAllDepartures : Cmd Msg
+getAllDepartures =
+    [ Heimdalsgata, Gronland ]
+        |> List.map getDeparturesForStop
+        |> Cmd.batch
+
+
+getDeparturesForStop : Stop -> Cmd Msg
+getDeparturesForStop stop =
     let
         stopId stop =
             case stop of
                 Heimdalsgata ->
                     "3010531"
+
+                Gronland ->
+                    "3010610"
 
         url =
             "https://reisapi.ruter.no/stopvisit/getdepartures/"
@@ -96,20 +108,26 @@ getDepartures stop =
     in
         Decode.list decodeDeparture
             |> Http.get url
-            |> Http.send DeparturesResponse
+            |> Http.send (DeparturesResponse stop)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        DeparturesResponse (Ok departures) ->
-            ( { model | departures = Just departures, errorMessage = Nothing }, Cmd.none )
+        DeparturesResponse stop (Ok departures) ->
+            ( { model
+                | departures =
+                    EveryDict.insert stop departures model.departures
+                , errorMessage = Nothing
+              }
+            , Cmd.none
+            )
 
-        DeparturesResponse (Err error) ->
+        DeparturesResponse stop (Err error) ->
             ( { model | errorMessage = Just (toString error) }, Cmd.none )
 
         RefreshDepartures _ ->
-            ( model, getDepartures Heimdalsgata )
+            ( model, getAllDepartures )
 
         UpdateNow now ->
             ( { model | now = Just now }, Cmd.none )
@@ -128,22 +146,38 @@ view model =
         Nothing ->
             case model.now of
                 Just now ->
-                    case model.departures of
-                        Just departures ->
-                            departures
-                                |> List.map (withTimeDelta now)
-                                |> hideDeparturesInThePast
-                                |> List.sortBy .timeDelta
-                                |> List.take 10
-                                |> List.map viewDeparture
-                                |> table []
-                                |> \t -> div [] [ h1 [] [ text "Heimdalsgata" ], t ]
-
-                        Nothing ->
-                            div [] []
+                    div []
+                        (model.departures
+                            |> EveryDict.toList
+                            |> List.map
+                                (\( stop, departures ) ->
+                                    viewDepartures stop departures now
+                                )
+                        )
 
                 Nothing ->
                     div [] []
+
+
+viewDepartures : Stop -> List Departure -> Time -> Html Msg
+viewDepartures stop departures now =
+    let
+        stopLabel =
+            case stop of
+                Heimdalsgata ->
+                    "Heimdalsgata"
+
+                Gronland ->
+                    "Grønland t-bane"
+    in
+        departures
+            |> List.map (withTimeDelta now)
+            |> hideDeparturesInThePast
+            |> List.sortBy .timeDelta
+            |> List.take 6
+            |> List.map viewDeparture
+            |> table []
+            |> \t -> div [] [ h2 [] [ text stopLabel ], t ]
 
 
 hideDeparturesInThePast : List DepartureWithTimeDelta -> List DepartureWithTimeDelta
@@ -173,6 +207,10 @@ viewDeparture departureWithTimeDelta =
                 -- Tram
                 "0B91EF" ->
                     "🚋"
+
+                -- Subway
+                "EC700C" ->
+                    "🚇"
 
                 -- Unknown
                 _ ->
