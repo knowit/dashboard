@@ -4,7 +4,9 @@
     "repository": "https://github.com/knowit/dashboard.git",
     "license": "BSD3",
     "source-directories": [
-        "src"
+        "src",
+        "src/Clock",
+        "src/RuterMonitor"
     ],
     "exposed-modules": [],
     "dependencies": {
