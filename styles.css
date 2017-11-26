@@ -8,7 +8,7 @@
 .clock {
  grid-column: 4;
  grid-row: 1;
- font-size: 2em;
+ font-size: 2rem;
 }
 
 .ruterMonitor {

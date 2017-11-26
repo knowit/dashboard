@@ -62,8 +62,11 @@ wrap toModelFunction subType ( newModel, cmd ) =
 view : Model -> Html Msg
 view model =
     div [ class "grid" ]
-        [ div [ class "clock" ]
-            [ C.view model.clock |> Html.map ClockMsg ]
-        , div [ class "ruterMonitor" ]
-            [ R.view model.ruterMonitor |> Html.map RuterMonitorMsg ]
+        [ viewSubmodule model C.view .clock ClockMsg "clock"
+        , viewSubmodule model R.view .ruterMonitor RuterMonitorMsg "ruterMonitor"
         ]
+
+
+viewSubmodule : b -> (c -> Html a) -> (b -> c) -> (a -> msg) -> String -> Html msg
+viewSubmodule model viewFunction selector subType cssClass =
+    div [ class cssClass ] [ viewFunction (selector model) |> Html.map subType ]
