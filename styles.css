@@ -1,0 +1,17 @@
+.grid {
+ display: grid;
+ grid-template-columns: repeat(3, 1fr);
+ grid-gap: 10px;
+ grid-auto-rows: minmax(100px, auto);
+}
+
+.clock {
+ grid-column: 4;
+ grid-row: 1;
+ font-size: 2em;
+}
+
+.ruterMonitor {
+ grid-column: 1;
+ grid-row: 1;
+}

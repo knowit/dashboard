@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (..)
+import Html.Attributes exposing (class)
 import Clock as C
 import RuterMonitor as R
 
@@ -60,9 +61,9 @@ wrap toModelFunction subType ( newModel, cmd ) =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ C.view model.clock
-            |> Html.map ClockMsg
-        , R.view model.ruterMonitor
-            |> Html.map RuterMonitorMsg
+    div [ class "grid" ]
+        [ div [ class "clock" ]
+            [ C.view model.clock |> Html.map ClockMsg ]
+        , div [ class "ruterMonitor" ]
+            [ R.view model.ruterMonitor |> Html.map RuterMonitorMsg ]
         ]
