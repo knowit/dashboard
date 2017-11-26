@@ -49,4 +49,4 @@ view model =
                 |> text
 
         Nothing ->
-            text ""
+            text "Loading…"

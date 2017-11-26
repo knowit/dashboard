@@ -46,20 +46,22 @@ update msg model =
     case msg of
         ClockMsg clockMsg ->
             C.update clockMsg model.clock
-                |> \( newModel, cmd ) ->
-                    ( { model | clock = newModel }, Cmd.map ClockMsg cmd )
+                |> wrap (\m -> { model | clock = m }) ClockMsg
 
         RuterMonitorMsg ruterMonitorMsg ->
             R.update ruterMonitorMsg model.ruterMonitor
-                |> \( newModel, cmd ) ->
-                    ( { model | ruterMonitor = newModel }, Cmd.map RuterMonitorMsg cmd )
+                |> wrap (\m -> { model | ruterMonitor = m }) RuterMonitorMsg
+
+
+wrap : (b -> c) -> (a -> msg) -> ( b, Cmd a ) -> ( c, Cmd msg )
+wrap toModelFunction subType ( newModel, cmd ) =
+    ( toModelFunction newModel, Cmd.map subType cmd )
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ h1 [] [ text "Dashboard" ]
-        , C.view model.clock
+        [ C.view model.clock
             |> Html.map ClockMsg
         , R.view model.ruterMonitor
             |> Html.map RuterMonitorMsg
