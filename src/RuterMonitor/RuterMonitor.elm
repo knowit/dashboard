@@ -1,12 +1,12 @@
-module RuterMonitor exposing (Model, Msg, update, view, subscriptions, initModel, getAllDepartures)
+module RuterMonitor exposing (Model, Msg, getAllDepartures, initModel, subscriptions, update, view)
 
-import Html exposing (..)
 import Date exposing (Date)
+import EveryDict
+import Html exposing (..)
 import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (..)
-import Time exposing (every, second, Time)
-import EveryDict
+import Time exposing (Time, every, second)
 
 
 main : Program Never Model Msg
@@ -97,8 +97,8 @@ getDeparturesForStop stop =
                         Err error ->
                             Decode.fail error
             in
-                Decode.string
-                    |> Decode.andThen convert
+            Decode.string
+                |> Decode.andThen convert
 
         decodeDeparture =
             decode Departure
@@ -107,9 +107,9 @@ getDeparturesForStop stop =
                 |> requiredAt [ "MonitoredVehicleJourney", "LineRef" ] Decode.string
                 |> requiredAt [ "Extensions", "LineColour" ] Decode.string
     in
-        Decode.list decodeDeparture
-            |> Http.get url
-            |> Http.send (DeparturesResponse stop)
+    Decode.list decodeDeparture
+        |> Http.get url
+        |> Http.send (DeparturesResponse stop)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -171,14 +171,14 @@ viewDepartures stop departures now =
                 Gronland ->
                     "Grønland t-bane"
     in
-        departures
-            |> List.map (withTimeDelta now)
-            |> hideDeparturesInThePast
-            |> List.sortBy .timeDelta
-            |> List.take 6
-            |> List.map viewDeparture
-            |> table []
-            |> \t -> div [] [ h2 [] [ text stopLabel ], t ]
+    departures
+        |> List.map (withTimeDelta now)
+        |> hideDeparturesInThePast
+        |> List.sortBy .timeDelta
+        |> List.take 6
+        |> List.map viewDeparture
+        |> table []
+        |> (\t -> div [] [ h2 [] [ text stopLabel ], t ])
 
 
 hideDeparturesInThePast : List DepartureWithTimeDelta -> List DepartureWithTimeDelta
@@ -189,7 +189,7 @@ hideDeparturesInThePast =
 withTimeDelta : Time -> Departure -> DepartureWithTimeDelta
 withTimeDelta time departure =
     { departure = departure
-    , timeDelta = (Date.toTime departure.expectedArrivalTime) - time
+    , timeDelta = Date.toTime departure.expectedArrivalTime - time
     }
 
 
@@ -217,12 +217,12 @@ viewDeparture departureWithTimeDelta =
                 _ ->
                     ""
     in
-        tr []
-            [ td [] [ text transportTypeSymbol ]
-            , td [] [ text departure.lineRef ]
-            , td [] [ text departure.destinationName ]
-            , td [] [ text (formatTimedelta departureWithTimeDelta.timeDelta) ]
-            ]
+    tr []
+        [ td [] [ text transportTypeSymbol ]
+        , td [] [ text departure.lineRef ]
+        , td [] [ text departure.destinationName ]
+        , td [] [ text (formatTimedelta departureWithTimeDelta.timeDelta) ]
+        ]
 
 
 formatTimedelta : Time -> String
@@ -249,11 +249,11 @@ formatTimedelta timeDelta =
                 |> Time.inSeconds
                 |> floor
     in
-        (if hours > 0 then
-            [ hours, minutes, seconds ]
-         else
-            [ minutes, seconds ]
-        )
-            |> List.map toString
-            |> List.map (String.padLeft 2 '0')
-            |> String.join ":"
+    (if hours > 0 then
+        [ hours, minutes, seconds ]
+     else
+        [ minutes, seconds ]
+    )
+        |> List.map toString
+        |> List.map (String.padLeft 2 '0')
+        |> String.join ":"

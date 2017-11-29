@@ -6,7 +6,8 @@
     "source-directories": [
         "src",
         "src/Clock",
-        "src/RuterMonitor"
+        "src/RuterMonitor",
+        "src/KodekalenderStats"
     ],
     "exposed-modules": [],
     "dependencies": {

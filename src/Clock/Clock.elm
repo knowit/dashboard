@@ -1,7 +1,7 @@
-module Clock exposing (Model, Msg, update, view, subscriptions, initModel)
+module Clock exposing (Model, Msg, initModel, subscriptions, update, view)
 
 import Html exposing (..)
-import Time exposing (every, second, Time)
+import Time exposing (Time, every, second)
 import Time.Format exposing (format)
 
 
