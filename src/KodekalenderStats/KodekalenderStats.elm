@@ -42,9 +42,13 @@ type alias Model =
 
 
 type Msg
-    = NumberOfUsers (Result Http.Error Int)
-    | NumberOfSolvedSolutions (Result Http.Error Int)
-    | FetchStats Time
+    = FetchStats Time
+    | StatsResponse StatsType (Result Http.Error Int)
+
+
+type StatsType
+    = NumberOfUsers
+    | NumberOfSolvedSolutions
 
 
 getAllStats : Cmd Msg
@@ -70,31 +74,24 @@ getNumberOfSolvedSolutions =
 graphQLPost msg query decoder =
     let
         body =
-            """
-            {
-             "operationName" : null,
-             "variables" : {},
-             "query" : "{""" ++ query ++ """}"
-            }
-            """
+            """ { "query" : "{ """ ++ query ++ """ }" } """
     in
     Http.post apiUrl (Http.stringBody "application/json" body) decoder
-        |> Http.send msg
+        |> Http.send (StatsResponse msg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NumberOfUsers (Ok n) ->
-            ( { model | numberOfUsers = Just n }, Cmd.none )
+        StatsResponse statsType (Ok n) ->
+            case statsType of
+                NumberOfUsers ->
+                    ( { model | numberOfUsers = Just n }, Cmd.none )
 
-        NumberOfUsers (Err error) ->
-            ( { model | errorMessage = Just (toString error) }, Cmd.none )
+                NumberOfSolvedSolutions ->
+                    ( { model | numberOfSolvedSolutions = Just n }, Cmd.none )
 
-        NumberOfSolvedSolutions (Ok n) ->
-            ( { model | numberOfSolvedSolutions = Just n }, Cmd.none )
-
-        NumberOfSolvedSolutions (Err error) ->
+        StatsResponse statsType (Err error) ->
             ( { model | errorMessage = Just (toString error) }, Cmd.none )
 
         FetchStats _ ->
