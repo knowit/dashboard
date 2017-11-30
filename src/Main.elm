@@ -1,19 +1,28 @@
 module Main exposing (..)
 
+import Clock as C
 import Html exposing (..)
 import Html.Attributes exposing (class)
-import Clock as C
+import KodekalenderStats as K
 import RuterMonitor as R
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initModel, R.getAllDepartures |> Cmd.map RuterMonitorMsg )
+        { init = ( initModel, initialCmd )
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
+
+
+initialCmd : Cmd Msg
+initialCmd =
+    [ R.getAllDepartures |> Cmd.map RuterMonitorMsg
+    , K.getAllStats |> Cmd.map KalenderStatsMsg
+    ]
+        |> Cmd.batch
 
 
 subscriptions : Model -> Sub Msg
@@ -21,6 +30,7 @@ subscriptions model =
     Sub.batch
         [ C.subscriptions model.clock |> Sub.map ClockMsg
         , R.subscriptions model.ruterMonitor |> Sub.map RuterMonitorMsg
+        , K.subscriptions model.kalenderStats |> Sub.map KalenderStatsMsg
         ]
 
 
@@ -28,18 +38,21 @@ initModel : Model
 initModel =
     { clock = C.initModel
     , ruterMonitor = R.initModel
+    , kalenderStats = K.initModel
     }
 
 
 type alias Model =
     { clock : C.Model
     , ruterMonitor : R.Model
+    , kalenderStats : K.Model
     }
 
 
 type Msg
     = ClockMsg C.Msg
     | RuterMonitorMsg R.Msg
+    | KalenderStatsMsg K.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -53,6 +66,10 @@ update msg model =
             R.update ruterMonitorMsg model.ruterMonitor
                 |> wrap (\m -> { model | ruterMonitor = m }) RuterMonitorMsg
 
+        KalenderStatsMsg kalenderStatsmsg ->
+            K.update kalenderStatsmsg model.kalenderStats
+                |> wrap (\m -> { model | kalenderStats = m }) KalenderStatsMsg
+
 
 wrap : (b -> c) -> (a -> msg) -> ( b, Cmd a ) -> ( c, Cmd msg )
 wrap toModelFunction subType ( newModel, cmd ) =
@@ -64,6 +81,7 @@ view model =
     div [ class "grid" ]
         [ viewSubmodule model C.view .clock ClockMsg "clock"
         , viewSubmodule model R.view .ruterMonitor RuterMonitorMsg "ruterMonitor"
+        , viewSubmodule model K.view .kalenderStats KalenderStatsMsg "kalenderStats"
         ]
 
 
