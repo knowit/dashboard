@@ -108,10 +108,9 @@ view model =
                 |> (\t -> tr [] [ td [] [ text (label ++ ":") ], td [] [ text t ] ])
     in
     div []
-        [ h2 [] [ text "Knowits Kodekalender" ]
+        [ h2 [] [ text "julekalender.knowit.no" ]
         , table []
             [ numberField .numberOfUsers "Antall brukere"
             , numberField .numberOfSolvedSolutions "Antall løste oppgaver"
             ]
-        , p [] [ text "julekalender.knowit.no" ]
         ]

@@ -1,17 +1,48 @@
 .grid {
  display: grid;
- grid-template-columns: repeat(3, 1fr);
- grid-gap: 10px;
- grid-auto-rows: minmax(100px, auto);
-}
-
-.clock {
- grid-column: 4;
- grid-row: 1;
- font-size: 2rem;
+ grid-template-columns: repeat(2, 1fr);
+ grid-gap: 5px;
+ grid-auto-rows: minmax(200px, auto);
+ font-size: 3.9vh;
 }
 
 .ruterMonitor {
- grid-column: 1;
  grid-row: 1;
+ grid-column: 1;
+}
+
+td {
+ padding-left: 15px;
+ padding-right: 15px;
+}
+
+.kalenderStats {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+.clock {
+  grid-row: 1;
+  grid-column: 3;
+}
+
+body {
+  background-color: #614B79;
+  color: #F9E267;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  margin-top: 2vh;
+  margin-bottom: 2vh;
+  margin-right: 2vw;
+  margin-left: 2vw;
+}
+
+h2 {
+  font-size: 100%;
+}
+
+.image {
+  height: 50vh;
+  position: fixed;
+  right: 5vw;
+  bottom: 5vh;
 }

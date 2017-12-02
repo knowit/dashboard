@@ -183,7 +183,7 @@ viewDepartures stop departures now =
 
 hideDeparturesInThePast : List DepartureWithTimeDelta -> List DepartureWithTimeDelta
 hideDeparturesInThePast =
-    List.filter (\t -> t.timeDelta > 0)
+    List.filter (\t -> t.timeDelta > Time.minute)
 
 
 withTimeDelta : Time -> Departure -> DepartureWithTimeDelta
@@ -249,11 +249,8 @@ formatTimedelta timeDelta =
                 |> Time.inSeconds
                 |> floor
     in
-    (if hours > 0 then
-        [ hours, minutes, seconds ]
-     else
-        [ minutes, seconds ]
-    )
-        |> List.map toString
-        |> List.map (String.padLeft 2 '0')
-        |> String.join ":"
+    if hours > 0 then
+        toString hours ++ " t, " ++ toString minutes ++ " min"
+    else
+        toString minutes
+            ++ " min"

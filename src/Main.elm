@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Clock as C
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, src)
 import KodekalenderStats as K
 import RuterMonitor as R
 
@@ -82,6 +82,7 @@ view model =
         [ viewSubmodule model C.view .clock ClockMsg "clock"
         , viewSubmodule model R.view .ruterMonitor RuterMonitorMsg "ruterMonitor"
         , viewSubmodule model K.view .kalenderStats KalenderStatsMsg "kalenderStats"
+        , img [ src "https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/twemoji/2/svg/1f384.svg", class "image" ] []
         ]
 
 
