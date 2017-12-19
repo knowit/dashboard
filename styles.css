@@ -10,42 +10,41 @@ body {
 }
 
 section {
-  padding-left: 1vw;
-  padding-right: 1vw;
-  padding-bottom: 1vh;
-  border-color  : black;
-  border-width  : thin;
-  border-style  : solid;
-  border-radius : 5px;
-  font-size: 1.5vw;
+  padding-right  : 1vw;
+  padding-bottom : 1vh;
+  padding-left   : 1vw;
+  border-color   : black;
+  border-width   : thin;
+  border-style   : solid;
+  border-radius  : 5px;
+  font-size      : 1.5vw;
 }
 
 .ruterMonitor {
   background-color : grey;
   grid-column      : 1;
-  grid-row-start         : 1;
-  grid-row-end: span 3;
+  grid-row-start   : 1;
+  grid-row-end     : span 3;
 }
 
 .clock {
-  grid-column : 3;
-  grid-row    : 1;
-  text-align: center;
-  font-size: 3vw;
-  color: #e1e114;
-  text-align: center;
-  border-style: hidden;
+  color        : #e1e114;
+  border-style : hidden;
+  text-align   : center;
+  text-align   : center;
+  font-size    : 3vw;
+  grid-column  : 3;
+  grid-row     : 1;
 }
 
-
 .kalenderStats {
-  background-color : grey;
-  grid-column-start      : 2;
-  grid-row         : 1;
+  background-color  : grey;
+  grid-column-start : 2;
+  grid-row          : 1;
 }
 
 .christmasTree {
+  text-align  : center;
   grid-column : 2;
   grid-row    : 2;
-  text-align: center;
 }
