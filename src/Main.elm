@@ -82,10 +82,10 @@ view model =
         [ viewSubmodule model C.view .clock ClockMsg "clock"
         , viewSubmodule model R.view .ruterMonitor RuterMonitorMsg "ruterMonitor"
         , viewSubmodule model K.view .kalenderStats KalenderStatsMsg "kalenderStats"
-        , img [ src "https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/twemoji/2/svg/1f384.svg", class "image" ] []
+        , div [ class "christmasTree" ] [ img [ src "https://s0.wp.com/wp-content/mu-plugins/wpcom-smileys/twemoji/2/svg/1f384.svg" ] [] ]
         ]
 
 
 viewSubmodule : b -> (c -> Html a) -> (b -> c) -> (a -> msg) -> String -> Html msg
 viewSubmodule model viewFunction selector subType cssClass =
-    div [ class cssClass ] [ viewFunction (selector model) |> Html.map subType ]
+    section [ class cssClass ] [ viewFunction (selector model) |> Html.map subType ]

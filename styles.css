@@ -1,48 +1,50 @@
 .grid {
- display: grid;
- grid-template-columns: repeat(2, 1fr);
- grid-gap: 5px;
- grid-auto-rows: minmax(200px, auto);
- font-size: 3.9vh;
-}
-
-.ruterMonitor {
- grid-row: 1;
- grid-column: 1;
-}
-
-td {
- padding-left: 15px;
- padding-right: 15px;
-}
-
-.kalenderStats {
-  grid-row: 1;
-  grid-column: 2;
-}
-
-.clock {
-  grid-row: 1;
-  grid-column: 3;
+  display               : grid;
+  grid-gap              : 1vh;
+  grid-template-columns : auto auto 15%;
+  grid-template-rows    : auto auto auto auto;
 }
 
 body {
-  background-color: #614B79;
-  color: #F9E267;
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-  margin-top: 2vh;
-  margin-bottom: 2vh;
-  margin-right: 2vw;
-  margin-left: 2vw;
+  background-color : #333333;
 }
 
-h2 {
-  font-size: 100%;
+section {
+  padding-right  : 1vw;
+  padding-bottom : 1vh;
+  padding-left   : 1vw;
+  border-color   : black;
+  border-width   : thin;
+  border-style   : solid;
+  border-radius  : 5px;
+  font-size      : 1.5vw;
 }
 
-.image {
-  height: 50vh;
-  position: fixed;
-  right: 5vw;
-  bottom: 5vh;
+.ruterMonitor {
+  background-color : grey;
+  grid-column      : 1;
+  grid-row-start   : 1;
+  grid-row-end     : span 3;
+}
+
+.clock {
+  color        : #e1e114;
+  border-style : hidden;
+  text-align   : center;
+  text-align   : center;
+  font-size    : 3vw;
+  grid-column  : 3;
+  grid-row     : 1;
+}
+
+.kalenderStats {
+  background-color  : grey;
+  grid-column-start : 2;
+  grid-row          : 1;
+}
+
+.christmasTree {
+  text-align  : center;
+  grid-column : 2;
+  grid-row    : 2;
 }

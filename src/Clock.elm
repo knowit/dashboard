@@ -42,11 +42,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    case model of
-        Just time ->
-            time
-                |> format "%H:%M:%S"
-                |> text
-
-        Nothing ->
-            text "Loading…"
+    model
+        |> Maybe.map (format "%H:%M:%S")
+        |> Maybe.withDefault "Loading…"
+        |> text
