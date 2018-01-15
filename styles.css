@@ -36,15 +36,3 @@ section {
   grid-column  : 3;
   grid-row     : 1;
 }
-
-.kalenderStats {
-  background-color  : grey;
-  grid-column-start : 2;
-  grid-row          : 1;
-}
-
-.christmasTree {
-  text-align  : center;
-  grid-column : 2;
-  grid-row    : 2;
-}
