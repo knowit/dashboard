@@ -1,22 +1,42 @@
 module RuterMonitor exposing (Model, Msg, getAllDepartures, initModel, subscriptions, update, view)
 
+import Color exposing (..)
 import Date exposing (Date)
+import Element exposing (..)
+import Element.Attributes exposing (..)
 import EveryDict
-import Html exposing (..)
+import Html exposing (Html, program)
 import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (..)
+import Style exposing (..)
+import Style.Font as Font
 import Time exposing (Time, every, second)
 
 
 main : Program Never Model Msg
 main =
-    Html.program
+    program
         { init = ( initModel, getAllDepartures )
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
+
+
+type Styles
+    = NoStyle
+    | DepartureHeading
+
+
+stylesheet : StyleSheet Styles variation
+stylesheet =
+    Style.styleSheet
+        [ Style.style NoStyle []
+        , Style.style DepartureHeading
+            [ Font.size 40
+            ]
+        ]
 
 
 initModel : Model
@@ -136,31 +156,33 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    case model.errorMessage of
-        Just string ->
-            div []
-                [ h1 [] [ text "Error" ]
-                , p [] [ text "Something went wrong:" ]
-                , p [] [ text string ]
-                ]
+    Element.layout stylesheet <|
+        case model.errorMessage of
+            Just string ->
+                row NoStyle
+                    []
+                    [ h1 NoStyle [] (text "Error")
+                    , el NoStyle [] (text "Something went wrong:")
+                    , el NoStyle [] (text string)
+                    ]
 
-        Nothing ->
-            case model.now of
-                Just now ->
-                    div []
-                        (model.departures
-                            |> EveryDict.toList
-                            |> List.map
-                                (\( stop, departures ) ->
-                                    viewDepartures stop departures now
-                                )
-                        )
+            Nothing ->
+                case model.now of
+                    Just now ->
+                        column NoStyle
+                            []
+                            (model.departures
+                                |> EveryDict.toList
+                                |> List.map
+                                    (\( stop, departures ) ->
+                                        viewDepartures stop departures now
+                                    )
+                            )
 
-                Nothing ->
-                    div [] []
+                    Nothing ->
+                        empty
 
 
-viewDepartures : Stop -> List Departure -> Time -> Html Msg
 viewDepartures stop departures now =
     let
         stopLabel =
@@ -177,8 +199,9 @@ viewDepartures stop departures now =
         |> List.sortBy .timeDelta
         |> List.take 6
         |> List.map viewDeparture
-        |> table []
-        |> (\t -> div [] [ h2 [] [ text stopLabel ], t ])
+        |> List.singleton
+        |> table NoStyle []
+        |> (\t -> column NoStyle [ padding 10 ] [ h2 DepartureHeading [] (text stopLabel), t ])
 
 
 hideDeparturesInThePast : List DepartureWithTimeDelta -> List DepartureWithTimeDelta
@@ -193,7 +216,6 @@ withTimeDelta time departure =
     }
 
 
-viewDeparture : DepartureWithTimeDelta -> Html Msg
 viewDeparture departureWithTimeDelta =
     let
         departure =
@@ -216,12 +238,17 @@ viewDeparture departureWithTimeDelta =
                 -- Unknown
                 _ ->
                     ""
+
+        col content =
+            column NoStyle [ padding 5, spacing 1 ] [ text content ]
     in
-    tr []
-        [ td [] [ text transportTypeSymbol ]
-        , td [] [ text departure.lineRef ]
-        , td [] [ text departure.destinationName ]
-        , td [] [ text (formatTimedelta departureWithTimeDelta.timeDelta) ]
+    -- TODO Use grid here to align shit
+    row NoStyle
+        []
+        [ col transportTypeSymbol
+        , col departure.lineRef
+        , col departure.destinationName
+        , col (formatTimedelta departureWithTimeDelta.timeDelta)
         ]
 
 
