@@ -1,10 +1,13 @@
 module Clock exposing (Model, Msg, update, view, subscriptions, initModel)
 
 import Html exposing (..)
+import Http
+import Json.Decode as Decode
+import Json.Decode.Pipeline exposing (..)
 
 
 type Msg
-    = NoOp
+    = RoomsFreeBusyResponse (Result Http.Error (List RoomFreeBusy))
 
 
 type alias Model =
@@ -16,6 +19,13 @@ type alias MeetingRoom =
     , number : Int
     , name : RoomName
     , calendarEmail : EmailAddress
+    }
+
+
+type alias RoomFreeBusy =
+    { roomCode : String
+    , roomName : String
+    , isBusy : Bool
     }
 
 
@@ -61,10 +71,28 @@ subscriptions model =
     Sub.none
 
 
+getRoomsFreeBusy : Cmd Msg
+getRoomsFreeBusy =
+    let
+        url =
+            -- Only works on Knowit network or via Knowit VPN
+            "http://10.205.0.5:4422/rooms"
+
+        decodeRoom =
+            decode RoomFreeBusy
+                |> required "roomCode" Decode.string
+                |> required "roomName" Decode.string
+                |> required "isBusy" Decode.bool
+    in
+        Decode.list decodeRoom
+            |> Http.get url
+            |> Http.send RoomsFreeBusyResponse
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
+        RoomsFreeBusyResponse _ ->
             ( model, Cmd.none )
 
 
