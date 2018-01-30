@@ -11,7 +11,9 @@ type Msg
 
 
 type alias Model =
-    MeetingRoom
+    { rooms : List RoomFreeBusy
+    , error : Maybe String
+    }
 
 
 type alias MeetingRoom =
@@ -54,7 +56,7 @@ midten =
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initModel, Cmd.none )
+        { init = ( initModel, getRoomsFreeBusy )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -63,7 +65,7 @@ main =
 
 initModel : Model
 initModel =
-    midten
+    { rooms = [], error = Nothing }
 
 
 subscriptions : Model -> Sub Msg
@@ -76,7 +78,8 @@ getRoomsFreeBusy =
     let
         url =
             -- Only works on Knowit network or via Knowit VPN
-            "http://10.205.0.5:4422/rooms"
+            --"http://10.205.0.5:4422/rooms"  -- Need to fix CORS issue
+            "/src/MeetingRooms/example_rooms.json"
 
         decodeRoom =
             decode RoomFreeBusy
@@ -92,18 +95,43 @@ getRoomsFreeBusy =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        RoomsFreeBusyResponse _ ->
-            ( model, Cmd.none )
+        RoomsFreeBusyResponse (Ok roomsFreeBusy) ->
+            ( { model | rooms = roomsFreeBusy }, Cmd.none )
+
+        RoomsFreeBusyResponse (Err error) ->
+            ( { model | error = Just (toString error) }, Cmd.none )
 
 
-view : Model -> Html Msg
-view model =
+viewOld : MeetingRoom -> Html Msg
+viewOld model =
     text <|
         (floorToString model.floor)
             ++ ", rom "
             ++ (toString model.number)
             ++ ": "
             ++ model.name
+
+
+view : Model -> Html Msg
+view model =
+    div []
+        [ h4 [] [ text ("Error : " ++ (Maybe.withDefault "" model.error)) ]
+        , div []
+            (List.map viewRoomFreeBusy model.rooms)
+        ]
+
+
+viewRoomFreeBusy : RoomFreeBusy -> Html Msg
+viewRoomFreeBusy room =
+    p []
+        [ text
+            (room.roomCode
+                ++ " "
+                ++ room.roomName
+                ++ ": "
+                ++ (toString room.isBusy)
+            )
+        ]
 
 
 floorToString : Floor -> String
