@@ -5,6 +5,7 @@ import Color exposing (..)
 import Element exposing (..)
 import Element.Attributes exposing (..)
 import Html exposing (Html, program)
+import Kantinemeny as K
 import RuterMonitor as R
 import Style exposing (..)
 import Style.Border as Border
@@ -45,6 +46,7 @@ stylesheet =
 initialCmd : Cmd Msg
 initialCmd =
     [ R.getAllDepartures |> Cmd.map RuterMonitorMsg
+    , K.getMenu |> Cmd.map KantinemenyMsg
     ]
         |> Cmd.batch
 
@@ -54,6 +56,7 @@ subscriptions model =
     Sub.batch
         [ C.subscriptions model.clock |> Sub.map ClockMsg
         , R.subscriptions model.ruterMonitor |> Sub.map RuterMonitorMsg
+        , K.subscriptions model.kantinemeny |> Sub.map KantinemenyMsg
         ]
 
 
@@ -61,18 +64,21 @@ initModel : Model
 initModel =
     { clock = C.initModel
     , ruterMonitor = R.initModel
+    , kantinemeny = K.initModel
     }
 
 
 type alias Model =
     { clock : C.Model
     , ruterMonitor : R.Model
+    , kantinemeny : K.Model
     }
 
 
 type Msg
     = ClockMsg C.Msg
     | RuterMonitorMsg R.Msg
+    | KantinemenyMsg K.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -85,6 +91,10 @@ update msg model =
         RuterMonitorMsg ruterMonitorMsg ->
             R.update ruterMonitorMsg model.ruterMonitor
                 |> wrap (\m -> { model | ruterMonitor = m }) RuterMonitorMsg
+
+        KantinemenyMsg kantinemenyMsg ->
+            K.update kantinemenyMsg model.kantinemeny
+                |> wrap (\m -> { model | kantinemeny = m }) KantinemenyMsg
 
 
 wrap : (b -> c) -> (a -> msg) -> ( b, Cmd a ) -> ( c, Cmd msg )
@@ -109,7 +119,12 @@ view model =
                 , height = 5
                 , content = column CellStyle [] [ R.view model.ruterMonitor |> Html.map RuterMonitorMsg |> html ]
                 }
-            , emptyCell ( 1, 0 )
+            , cell
+                { start = ( 1, 0 )
+                , width = 1
+                , height = 1
+                , content = column CellStyle [] [ K.view model.kantinemeny |> Html.map KantinemenyMsg |> html ]
+                }
             , emptyCell ( 2, 0 )
             , emptyCell ( 3, 0 )
             , cell
