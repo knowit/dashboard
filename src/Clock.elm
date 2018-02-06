@@ -1,13 +1,27 @@
 module Clock exposing (Model, Msg, initModel, subscriptions, update, view)
 
-import Html exposing (..)
+import Element exposing (..)
+import Element.Attributes exposing (..)
+import Html exposing (Html, program)
+import Style exposing (..)
+import Style.Border as Border
+import Style.Font as Font
 import Time exposing (Time, every, second)
 import Time.Format exposing (format)
 
 
+type Styles
+    = TimeLabel
+
+
+stylesheet : StyleSheet Styles variation
+stylesheet =
+    Style.styleSheet [ Style.style TimeLabel [ Font.size 50 ] ]
+
+
 main : Program Never Model Msg
 main =
-    Html.program
+    program
         { init = ( Nothing, Cmd.none )
         , view = view
         , update = update
@@ -42,7 +56,9 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    model
-        |> Maybe.map (format "%H:%M:%S")
-        |> Maybe.withDefault "Loading…"
-        |> text
+    Element.layout stylesheet <|
+        (model
+            |> Maybe.map (format "%H:%M:%S")
+            |> Maybe.withDefault "Loading…"
+            |> (\t -> el TimeLabel [ center ] (text t))
+        )

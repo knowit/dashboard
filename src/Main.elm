@@ -1,19 +1,45 @@
 module Main exposing (..)
 
 import Clock as C
-import Html exposing (..)
-import Html.Attributes exposing (class, src)
+import Color exposing (..)
+import Element exposing (..)
+import Element.Attributes exposing (..)
+import Html exposing (Html, program)
 import RuterMonitor as R
+import Style exposing (..)
+import Style.Border as Border
+import Style.Color as Color
 
 
 main : Program Never Model Msg
 main =
-    Html.program
+    program
         { init = ( initModel, initialCmd )
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
+
+
+type Styles
+    = NoStyle
+    | GridStyle
+    | CellStyle
+
+
+stylesheet : StyleSheet Styles variation
+stylesheet =
+    Style.styleSheet
+        [ Style.style NoStyle []
+        , Style.style GridStyle []
+        , Style.style CellStyle
+            [ Color.background gray
+            , Color.border black
+            , Border.solid
+            , Border.rounded 5
+            , Border.all 1
+            ]
+        ]
 
 
 initialCmd : Cmd Msg
@@ -68,12 +94,30 @@ wrap toModelFunction subType ( newModel, cmd ) =
 
 view : Model -> Html Msg
 view model =
-    div [ class "grid" ]
-        [ viewSubmodule model C.view .clock ClockMsg "clock"
-        , viewSubmodule model R.view .ruterMonitor RuterMonitorMsg "ruterMonitor"
-        ]
-
-
-viewSubmodule : b -> (c -> Html a) -> (b -> c) -> (a -> msg) -> String -> Html msg
-viewSubmodule model viewFunction selector subType cssClass =
-    section [ class cssClass ] [ viewFunction (selector model) |> Html.map subType ]
+    let
+        emptyCell pos =
+            cell { start = pos, width = 1, height = 1, content = el NoStyle [] (text "") }
+    in
+    grid GridStyle
+        [ padding 10 ]
+        { columns = [ percent 20, percent 20, percent 20, percent 20, percent 20 ]
+        , rows = [ percent 20, percent 20, percent 20, percent 20, percent 20 ]
+        , cells =
+            [ cell
+                { start = ( 0, 0 )
+                , width = 1
+                , height = 5
+                , content = column CellStyle [] [ R.view model.ruterMonitor |> Html.map RuterMonitorMsg |> html ]
+                }
+            , emptyCell ( 1, 0 )
+            , emptyCell ( 2, 0 )
+            , emptyCell ( 3, 0 )
+            , cell
+                { start = ( 4, 0 )
+                , width = 1
+                , height = 1
+                , content = column CellStyle [] [ C.view model.clock |> Html.map ClockMsg |> html ]
+                }
+            ]
+        }
+        |> Element.layout stylesheet
