@@ -121,8 +121,8 @@ view model =
                 }
             , cell
                 { start = ( 1, 0 )
-                , width = 1
-                , height = 1
+                , width = 2
+                , height = 5
                 , content = column CellStyle [] [ K.view model.kantinemeny |> Html.map KantinemenyMsg |> html ]
                 }
             , emptyCell ( 2, 0 )

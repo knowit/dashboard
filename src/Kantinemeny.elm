@@ -77,7 +77,7 @@ view : Model -> Html Msg
 view model =
     case model of
         Just menu ->
-            ul [] <| List.map viewMenuItem menu
+            div [] [ h1 [] [ text "Dagens kantinemeny" ], ul [] <| List.map viewMenuItem menu ]
 
         Nothing ->
             span [] [ text "Loading…" ]
@@ -85,4 +85,4 @@ view model =
 
 viewMenuItem : MenuItem -> Html m
 viewMenuItem menuItem =
-    li [] [ menuItem.name ++ " (" ++ menuItem.price ++ ")" |> text ]
+    p [] [ menuItem.name ++ " (" ++ menuItem.price ++ ")" |> text ]
