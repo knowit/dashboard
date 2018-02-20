@@ -1,9 +1,13 @@
 module Kantinemeny exposing (Model, Msg, getMenu, initModel, subscriptions, update, view)
 
-import Html exposing (..)
+import Element exposing (..)
+import Element.Attributes exposing (..)
+import Html exposing (program)
 import Http
 import Json.Decode as Decode
-import Time exposing (Time, every, minute)
+import Style exposing (..)
+import Style.Font as Font
+import Time exposing (Time, every, minute, second)
 
 
 main : Program Never Model Msg
@@ -14,6 +18,16 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
+
+type Styles
+    = Header
+    | NoStyle
+
+
+stylesheet : StyleSheet Styles variation
+stylesheet =
+    Style.styleSheet [ Style.style Header [ Font.size 40 ] ]
 
 
 initModel : Model
@@ -73,16 +87,21 @@ getMenu =
         |> Http.send MenuResult
 
 
-view : Model -> Html Msg
+view : Model -> Html.Html Msg
 view model =
-    case model of
-        Just menu ->
-            div [] [ h1 [] [ text "Dagens kantinemeny" ], ul [] <| List.map viewMenuItem menu ]
+    Element.layout stylesheet <|
+        case model of
+            Just menu ->
+                column NoStyle
+                    [ padding 10 ]
+                    [ el Header [] (text "Dagens kantinemeny")
+                    , column NoStyle [ padding 10 ] <| List.map viewMenuItem menu
+                    ]
 
-        Nothing ->
-            span [] [ text "Loading…" ]
+            Nothing ->
+                el NoStyle [] (text "Loading…")
 
 
-viewMenuItem : MenuItem -> Html m
+viewMenuItem : MenuItem -> Element Styles variation msg
 viewMenuItem menuItem =
-    p [] [ menuItem.name ++ " (" ++ menuItem.price ++ ")" |> text ]
+    el NoStyle [ padding 10 ] (menuItem.name ++ " (" ++ menuItem.price ++ ")" |> text)
