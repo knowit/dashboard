@@ -121,8 +121,8 @@ update msg model =
             sortBy .roomCode rooms
     in
         case msg of
-            RoomsAvailabilityResponse (Ok roomsFreeBusy) ->
-                ( { model | rooms = sortRooms roomsFreeBusy }, Cmd.none )
+            RoomsAvailabilityResponse (Ok roomsAvailability) ->
+                ( { model | rooms = sortRooms roomsAvailability }, Cmd.none )
 
             RoomsAvailabilityResponse (Err error) ->
                 ( { model | error = Just (toString error) }, Cmd.none )
