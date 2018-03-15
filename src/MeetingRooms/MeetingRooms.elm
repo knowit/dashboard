@@ -9,11 +9,11 @@ import Date exposing (Date)
 
 
 type Msg
-    = RoomsFreeBusyResponse (Result Http.Error (List RoomFreeBusy))
+    = RoomsFreeBusyResponse (Result Http.Error (List RoomAvailability))
 
 
 type alias Model =
-    { rooms : List RoomFreeBusy
+    { rooms : List RoomAvailability
     , error : Maybe String
     }
 
@@ -26,7 +26,7 @@ type alias MeetingRoom =
     }
 
 
-type alias RoomFreeBusy =
+type alias RoomAvailability =
     { roomCode : String
     , roomName : String
     , isBusy : Bool
@@ -101,7 +101,7 @@ getRoomsFreeBusy =
                 |> Decode.andThen decodeResult
 
         decodeRoom =
-            decode RoomFreeBusy
+            decode RoomAvailability
                 |> required "roomCode" Decode.string
                 |> required "roomName" Decode.string
                 |> required "isBusy" Decode.bool
@@ -116,7 +116,7 @@ getRoomsFreeBusy =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
-        sortRooms : List RoomFreeBusy -> List RoomFreeBusy
+        sortRooms : List RoomAvailability -> List RoomAvailability
         sortRooms rooms =
             sortBy .roomCode rooms
     in
@@ -155,7 +155,7 @@ view model =
             ]
 
 
-viewRoomFreeBusy : RoomFreeBusy -> Html Msg
+viewRoomFreeBusy : RoomAvailability -> Html Msg
 viewRoomFreeBusy room =
     p []
         [ text
