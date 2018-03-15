@@ -30,6 +30,8 @@ type alias RoomFreeBusy =
     { roomCode : String
     , roomName : String
     , isBusy : Bool
+    , currentEventEnd : Maybe Date
+    , nextEventStart : Maybe Date
     }
 
 
@@ -103,6 +105,8 @@ getRoomsFreeBusy =
                 |> required "roomCode" Decode.string
                 |> required "roomName" Decode.string
                 |> required "isBusy" Decode.bool
+                |> required "currentEventEnd" (Decode.nullable decodeDate)
+                |> required "nextEventStart" (Decode.nullable decodeDate)
     in
         Decode.list decodeRoom
             |> Http.get url
