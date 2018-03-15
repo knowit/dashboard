@@ -1,22 +1,42 @@
-module RuterMonitor exposing (Model, Msg, update, view, subscriptions, initModel, getAllDepartures)
+module RuterMonitor exposing (Model, Msg, getAllDepartures, initModel, subscriptions, update, view)
 
-import Html exposing (..)
+import Color exposing (..)
 import Date exposing (Date)
+import Element exposing (..)
+import Element.Attributes exposing (..)
+import EveryDict
+import Html exposing (Html, program)
 import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (..)
-import Time exposing (every, second, Time)
-import EveryDict
+import Style exposing (..)
+import Style.Font as Font
+import Time exposing (Time, every, second)
 
 
 main : Program Never Model Msg
 main =
-    Html.program
+    program
         { init = ( initModel, getAllDepartures )
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
+
+
+type Styles
+    = NoStyle
+    | DepartureHeading
+
+
+stylesheet : StyleSheet Styles variation
+stylesheet =
+    Style.styleSheet
+        [ Style.style NoStyle []
+        , Style.style DepartureHeading
+            [ Font.size 40
+            ]
+        ]
 
 
 initModel : Model
@@ -97,8 +117,8 @@ getDeparturesForStop stop =
                         Err error ->
                             Decode.fail error
             in
-                Decode.string
-                    |> Decode.andThen convert
+            Decode.string
+                |> Decode.andThen convert
 
         decodeDeparture =
             decode Departure
@@ -107,9 +127,9 @@ getDeparturesForStop stop =
                 |> requiredAt [ "MonitoredVehicleJourney", "LineRef" ] Decode.string
                 |> requiredAt [ "Extensions", "LineColour" ] Decode.string
     in
-        Decode.list decodeDeparture
-            |> Http.get url
-            |> Http.send (DeparturesResponse stop)
+    Decode.list decodeDeparture
+        |> Http.get url
+        |> Http.send (DeparturesResponse stop)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -136,31 +156,33 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    case model.errorMessage of
-        Just string ->
-            div []
-                [ h1 [] [ text "Error" ]
-                , p [] [ text "Something went wrong:" ]
-                , p [] [ text string ]
-                ]
+    Element.layout stylesheet <|
+        case model.errorMessage of
+            Just string ->
+                row NoStyle
+                    []
+                    [ h1 NoStyle [] (text "Error")
+                    , el NoStyle [] (text "Something went wrong:")
+                    , el NoStyle [] (text string)
+                    ]
 
-        Nothing ->
-            case model.now of
-                Just now ->
-                    div []
-                        (model.departures
-                            |> EveryDict.toList
-                            |> List.map
-                                (\( stop, departures ) ->
-                                    viewDepartures stop departures now
-                                )
-                        )
+            Nothing ->
+                case model.now of
+                    Just now ->
+                        column NoStyle
+                            []
+                            (model.departures
+                                |> EveryDict.toList
+                                |> List.map
+                                    (\( stop, departures ) ->
+                                        viewDepartures stop departures now
+                                    )
+                            )
 
-                Nothing ->
-                    div [] []
+                    Nothing ->
+                        empty
 
 
-viewDepartures : Stop -> List Departure -> Time -> Html Msg
 viewDepartures stop departures now =
     let
         stopLabel =
@@ -171,29 +193,29 @@ viewDepartures stop departures now =
                 Gronland ->
                     "Grønland t-bane"
     in
-        departures
-            |> List.map (withTimeDelta now)
-            |> hideDeparturesInThePast
-            |> List.sortBy .timeDelta
-            |> List.take 6
-            |> List.map viewDeparture
-            |> table []
-            |> \t -> div [] [ h2 [] [ text stopLabel ], t ]
+    departures
+        |> List.map (withTimeDelta now)
+        |> hideDeparturesInThePast
+        |> List.sortBy .timeDelta
+        |> List.take 6
+        |> List.map viewDeparture
+        |> List.singleton
+        |> table NoStyle []
+        |> (\t -> column NoStyle [ padding 10 ] [ h2 DepartureHeading [] (text stopLabel), t ])
 
 
 hideDeparturesInThePast : List DepartureWithTimeDelta -> List DepartureWithTimeDelta
 hideDeparturesInThePast =
-    List.filter (\t -> t.timeDelta > 0)
+    List.filter (\t -> t.timeDelta > Time.minute)
 
 
 withTimeDelta : Time -> Departure -> DepartureWithTimeDelta
 withTimeDelta time departure =
     { departure = departure
-    , timeDelta = (Date.toTime departure.expectedArrivalTime) - time
+    , timeDelta = Date.toTime departure.expectedArrivalTime - time
     }
 
 
-viewDeparture : DepartureWithTimeDelta -> Html Msg
 viewDeparture departureWithTimeDelta =
     let
         departure =
@@ -216,13 +238,18 @@ viewDeparture departureWithTimeDelta =
                 -- Unknown
                 _ ->
                     ""
+
+        col content =
+            column NoStyle [ padding 5, spacing 1 ] [ text content ]
     in
-        tr []
-            [ td [] [ text transportTypeSymbol ]
-            , td [] [ text departure.lineRef ]
-            , td [] [ text departure.destinationName ]
-            , td [] [ text (formatTimedelta departureWithTimeDelta.timeDelta) ]
-            ]
+    -- TODO Use grid here to align shit
+    row NoStyle
+        []
+        [ col transportTypeSymbol
+        , col departure.lineRef
+        , col departure.destinationName
+        , col (formatTimedelta departureWithTimeDelta.timeDelta)
+        ]
 
 
 formatTimedelta : Time -> String
@@ -249,11 +276,8 @@ formatTimedelta timeDelta =
                 |> Time.inSeconds
                 |> floor
     in
-        (if hours > 0 then
-            [ hours, minutes, seconds ]
-         else
-            [ minutes, seconds ]
-        )
-            |> List.map toString
-            |> List.map (String.padLeft 2 '0')
-            |> String.join ":"
+    if hours > 0 then
+        toString hours ++ " t, " ++ toString minutes ++ " min"
+    else
+        toString minutes
+            ++ " min"
