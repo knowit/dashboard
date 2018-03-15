@@ -78,8 +78,8 @@ getRoomsFreeBusy =
     let
         url =
             -- Only works on Knowit network or via Knowit VPN
-            --"http://10.205.0.5:4422/rooms"  -- Need to fix CORS issue
-            "/src/MeetingRooms/example_rooms.json"
+            -- "/src/MeetingRooms/example_rooms.json"
+            "http://10.205.0.5:4422/rooms"
 
         decodeRoom =
             decode RoomFreeBusy
