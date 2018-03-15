@@ -3,7 +3,7 @@ module Clock exposing (Model, Msg, update, view, subscriptions, initModel)
 import Html exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (..)
+import Json.Decode.Pipeline exposing (decode, required)
 import List exposing (sortBy)
 import Date exposing (Date)
 
