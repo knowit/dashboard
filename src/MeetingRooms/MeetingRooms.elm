@@ -60,7 +60,7 @@ midten =
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initModel, getRoomsFreeBusy )
+        { init = ( initModel, getRoomsAvailability )
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -77,8 +77,8 @@ subscriptions model =
     Sub.none
 
 
-getRoomsFreeBusy : Cmd Msg
-getRoomsFreeBusy =
+getRoomsAvailability : Cmd Msg
+getRoomsAvailability =
     let
         url =
             -- Only works on Knowit network or via Knowit VPN
