@@ -4,6 +4,7 @@ import Html exposing (..)
 import Http
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (..)
+import List exposing (sortBy)
 
 
 type Msg
@@ -94,12 +95,17 @@ getRoomsFreeBusy =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        RoomsFreeBusyResponse (Ok roomsFreeBusy) ->
-            ( { model | rooms = roomsFreeBusy }, Cmd.none )
+    let
+        sortRooms : List RoomFreeBusy -> List RoomFreeBusy
+        sortRooms rooms =
+            sortBy .roomCode rooms
+    in
+        case msg of
+            RoomsFreeBusyResponse (Ok roomsFreeBusy) ->
+                ( { model | rooms = sortRooms roomsFreeBusy }, Cmd.none )
 
-        RoomsFreeBusyResponse (Err error) ->
-            ( { model | error = Just (toString error) }, Cmd.none )
+            RoomsFreeBusyResponse (Err error) ->
+                ( { model | error = Just (toString error) }, Cmd.none )
 
 
 viewOld : MeetingRoom -> Html Msg
