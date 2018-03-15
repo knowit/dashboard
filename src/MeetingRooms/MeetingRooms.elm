@@ -148,15 +148,15 @@ view model =
             [ h4 [] [ text ("Error : " ++ (Maybe.withDefault "" model.error)) ]
             , h5 [] [ text "Free Rooms:" ]
             , div []
-                (List.map viewRoomFreeBusy freeRooms)
+                (List.map viewRoomAvailability freeRooms)
             , h5 [] [ text "Busy Rooms:" ]
             , div []
-                (List.map viewRoomFreeBusy busyRooms)
+                (List.map viewRoomAvailability busyRooms)
             ]
 
 
-viewRoomFreeBusy : RoomAvailability -> Html Msg
-viewRoomFreeBusy room =
+viewRoomAvailability : RoomAvailability -> Html Msg
+viewRoomAvailability room =
     p []
         [ text
             (room.roomCode
