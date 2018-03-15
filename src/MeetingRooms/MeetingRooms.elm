@@ -157,13 +157,22 @@ view model =
 
 viewRoomAvailability : RoomAvailability -> Html Msg
 viewRoomAvailability room =
-    p []
-        [ text
-            (room.roomCode
-                ++ " "
-                ++ room.roomName
-            )
-        ]
+    let
+        availabilityDesc =
+            if room.isBusy then
+                "Busy until " ++ (Maybe.withDefault "??" (Maybe.map toString room.currentEventEnd))
+            else
+                "Free" ++ (Maybe.withDefault ", with no further booking" (Maybe.map (\d -> " until " ++ (toString d)) room.nextEventStart))
+    in
+        p []
+            [ text
+                (room.roomCode
+                    ++ " "
+                    ++ room.roomName
+                    ++ ": "
+                    ++ availabilityDesc
+                )
+            ]
 
 
 floorToString : Floor -> String
