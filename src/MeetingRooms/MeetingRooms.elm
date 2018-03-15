@@ -2,9 +2,10 @@ module Clock exposing (Model, Msg, update, view, subscriptions, initModel)
 
 import Html exposing (..)
 import Http
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (..)
 import List exposing (sortBy)
+import Date exposing (Date)
 
 
 type Msg
@@ -81,6 +82,21 @@ getRoomsFreeBusy =
             -- Only works on Knowit network or via Knowit VPN
             -- "/src/MeetingRooms/example_rooms.json"
             "http://10.205.0.5:4422/rooms"
+
+        decodeResult : Result x a -> Decoder a
+        decodeResult result =
+            case result of
+                Ok value ->
+                    Decode.succeed value
+
+                Err error ->
+                    Decode.fail ("Decode failed: " ++ (toString error))
+
+        decodeDate : Decoder Date
+        decodeDate =
+            Decode.string
+                |> Decode.map Date.fromString
+                |> Decode.andThen decodeResult
 
         decodeRoom =
             decode RoomFreeBusy
