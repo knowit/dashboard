@@ -120,11 +120,19 @@ viewOld model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ h4 [] [ text ("Error : " ++ (Maybe.withDefault "" model.error)) ]
-        , div []
-            (List.map viewRoomFreeBusy model.rooms)
-        ]
+    let
+        ( busyRooms, freeRooms ) =
+            List.partition .isBusy model.rooms
+    in
+        div []
+            [ h4 [] [ text ("Error : " ++ (Maybe.withDefault "" model.error)) ]
+            , h5 [] [ text "Free Rooms:" ]
+            , div []
+                (List.map viewRoomFreeBusy freeRooms)
+            , h5 [] [ text "Busy Rooms:" ]
+            , div []
+                (List.map viewRoomFreeBusy busyRooms)
+            ]
 
 
 viewRoomFreeBusy : RoomFreeBusy -> Html Msg
@@ -134,8 +142,6 @@ viewRoomFreeBusy room =
             (room.roomCode
                 ++ " "
                 ++ room.roomName
-                ++ ": "
-                ++ (toString room.isBusy)
             )
         ]
 
