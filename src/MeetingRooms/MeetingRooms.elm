@@ -9,7 +9,7 @@ import Date exposing (Date)
 
 
 type Msg
-    = RoomsFreeBusyResponse (Result Http.Error (List RoomAvailability))
+    = RoomsAvailabilityResponse (Result Http.Error (List RoomAvailability))
 
 
 type alias Model =
@@ -110,7 +110,7 @@ getRoomsFreeBusy =
     in
         Decode.list decodeRoom
             |> Http.get url
-            |> Http.send RoomsFreeBusyResponse
+            |> Http.send RoomsAvailabilityResponse
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -121,10 +121,10 @@ update msg model =
             sortBy .roomCode rooms
     in
         case msg of
-            RoomsFreeBusyResponse (Ok roomsFreeBusy) ->
+            RoomsAvailabilityResponse (Ok roomsFreeBusy) ->
                 ( { model | rooms = sortRooms roomsFreeBusy }, Cmd.none )
 
-            RoomsFreeBusyResponse (Err error) ->
+            RoomsAvailabilityResponse (Err error) ->
                 ( { model | error = Just (toString error) }, Cmd.none )
 
 
