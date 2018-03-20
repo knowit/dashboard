@@ -1,11 +1,11 @@
-module Clock exposing (Model, Msg, update, view, subscriptions, initModel)
+module MeetingRooms exposing (Model, Msg, initModel, subscriptions, update, view)
 
+import Date exposing (Date)
 import Html exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
 import List exposing (sortBy)
-import Date exposing (Date)
 
 
 type Msg
@@ -13,7 +13,7 @@ type Msg
 
 
 type alias Model =
-    { rooms : List RoomAvailability
+    { rooms : Maybe (List RoomAvailability)
     , error : Maybe String
     }
 
@@ -28,7 +28,7 @@ type alias MeetingRoom =
 
 type alias RoomAvailability =
     { roomCode : String
-    , roomName : String
+    , roomName : RoomName
     , isBusy : Bool
     , currentEventEnd : Maybe Date
     , nextEventStart : Maybe Date
@@ -48,15 +48,6 @@ type alias EmailAddress =
     String
 
 
-midten : MeetingRoom
-midten =
-    { floor = Sundt4th
-    , number = 16
-    , name = "Midten"
-    , calendarEmail = "knowit.no_2d3632363431323237383036@resource.calendar.google.com"
-    }
-
-
 main : Program Never Model Msg
 main =
     Html.program
@@ -69,7 +60,7 @@ main =
 
 initModel : Model
 initModel =
-    { rooms = [], error = Nothing }
+    { rooms = Nothing, error = Nothing }
 
 
 subscriptions : Model -> Sub Msg
@@ -92,7 +83,7 @@ getRoomsAvailability =
                     Decode.succeed value
 
                 Err error ->
-                    Decode.fail ("Decode failed: " ++ (toString error))
+                    Decode.fail ("Decode failed: " ++ toString error)
 
         decodeDate : Decoder Date
         decodeDate =
@@ -108,51 +99,50 @@ getRoomsAvailability =
                 |> required "currentEventEnd" (Decode.nullable decodeDate)
                 |> required "nextEventStart" (Decode.nullable decodeDate)
     in
-        Decode.list decodeRoom
-            |> Http.get url
-            |> Http.send RoomsAvailabilityResponse
+    Decode.list decodeRoom
+        |> Http.get url
+        |> Http.send RoomsAvailabilityResponse
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        sortRooms : List RoomAvailability -> List RoomAvailability
-        sortRooms rooms =
-            sortBy .roomCode rooms
-    in
-        case msg of
-            RoomsAvailabilityResponse (Ok roomsAvailability) ->
-                ( { model | rooms = sortRooms roomsAvailability }, Cmd.none )
+    case msg of
+        RoomsAvailabilityResponse (Ok roomsAvailabilities) ->
+            ( { model | rooms = Just roomsAvailabilities }, Cmd.none )
 
-            RoomsAvailabilityResponse (Err error) ->
-                ( { model | error = Just (toString error) }, Cmd.none )
-
-
-viewOld : MeetingRoom -> Html Msg
-viewOld model =
-    text <|
-        (floorToString model.floor)
-            ++ ", rom "
-            ++ (toString model.number)
-            ++ ": "
-            ++ model.name
+        RoomsAvailabilityResponse (Err error) ->
+            ( { model | error = Just (toString error) }, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
-    let
-        ( busyRooms, freeRooms ) =
-            List.partition .isBusy model.rooms
-    in
-        div []
-            [ h4 [] [ text ("Error : " ++ (Maybe.withDefault "" model.error)) ]
-            , h5 [] [ text "Free Rooms:" ]
-            , div []
-                (List.map viewRoomAvailability freeRooms)
-            , h5 [] [ text "Busy Rooms:" ]
-            , div []
-                (List.map viewRoomAvailability busyRooms)
-            ]
+    case model.rooms of
+        Just rooms ->
+            let
+                ( busyRooms, freeRooms ) =
+                    rooms
+                        |> sortBy .roomCode
+                        |> List.partition .isBusy
+            in
+            div []
+                [ h5 [] [ text "Free Rooms:" ]
+                , freeRooms
+                    |> List.map viewRoomAvailability
+                    |> div []
+                , h5 [] [ text "Busy Rooms:" ]
+                , busyRooms
+                    |> List.map viewRoomAvailability
+                    |> div []
+                , case model.error of
+                    Just errorMsg ->
+                        h4 [] [ text ("Error: " ++ errorMsg) ]
+
+                    Nothing ->
+                        span [] []
+                ]
+
+        Nothing ->
+            h5 [] [ text "Loading…" ]
 
 
 viewRoomAvailability : RoomAvailability -> Html Msg
@@ -160,19 +150,27 @@ viewRoomAvailability room =
     let
         availabilityDesc =
             if room.isBusy then
-                "Busy until " ++ (Maybe.withDefault "??" (Maybe.map toString room.currentEventEnd))
+                "Busy until "
+                    ++ (room.currentEventEnd
+                            |> Maybe.map toString
+                            |> Maybe.withDefault "??"
+                       )
             else
-                "Free" ++ (Maybe.withDefault ", with no further booking" (Maybe.map (\d -> " until " ++ (toString d)) room.nextEventStart))
+                "Free"
+                    ++ (room.nextEventStart
+                            |> Maybe.map (\d -> " until " ++ toString d)
+                            |> Maybe.withDefault ", with no further booking"
+                       )
     in
-        p []
-            [ text
-                (room.roomCode
-                    ++ " "
-                    ++ room.roomName
-                    ++ ": "
-                    ++ availabilityDesc
-                )
-            ]
+    p []
+        [ text
+            (room.roomCode
+                ++ " "
+                ++ room.roomName
+                ++ ": "
+                ++ availabilityDesc
+            )
+        ]
 
 
 floorToString : Floor -> String
