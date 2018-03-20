@@ -7,10 +7,12 @@ import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
 import List exposing (sortBy)
+import Time exposing (Time, every, second)
 
 
 type Msg
     = RoomsAvailabilityResponse (Result Http.Error (List RoomAvailability))
+    | Refresh Time
 
 
 type alias Model =
@@ -66,7 +68,7 @@ initModel =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    every (30 * second) Refresh
 
 
 getRoomsAvailability : Cmd Msg
@@ -113,6 +115,9 @@ update msg model =
 
         RoomsAvailabilityResponse (Err error) ->
             ( { model | error = Just (toString error) }, Cmd.none )
+
+        Refresh _ ->
+            ( model, getRoomsAvailability )
 
 
 view : Model -> Html Msg
