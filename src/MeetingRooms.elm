@@ -66,9 +66,14 @@ initModel =
     { rooms = Nothing, error = Nothing }
 
 
+
+-- TODO Legg til subscriptions igjen når https er på plass
+--every (30 * second) Refresh
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    every (30 * second) Refresh
+    Sub.none
 
 
 getRoomsAvailability : Cmd Msg
@@ -77,6 +82,7 @@ getRoomsAvailability =
         url =
             -- Only works on Knowit network or via Knowit VPN
             -- "/src/example_data/example_rooms.json"
+            -- TODO Bruk https her, for å kunne kjøre dette fra GitHub Pages
             "http://10.205.0.5:4422/rooms"
 
         decodeResult : Result x a -> Decoder a
@@ -148,7 +154,7 @@ view model =
                 ]
 
         Nothing ->
-            h3 [] [ text "Loading…" ]
+            h3 [] [ text "Møteromstatus" ]
 
 
 viewRoomAvailability : RoomAvailability -> Html Msg
