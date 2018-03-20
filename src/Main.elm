@@ -10,6 +10,7 @@ import RuterMonitor as R
 import Style exposing (..)
 import Style.Border as Border
 import Style.Color as Color
+import Style.Font as Font
 
 
 main : Program Never Model Msg
@@ -34,11 +35,7 @@ stylesheet =
         [ Style.style NoStyle []
         , Style.style GridStyle []
         , Style.style CellStyle
-            [ Color.background gray
-            , Color.border black
-            , Border.solid
-            , Border.rounded 5
-            , Border.all 1
+            [ Color.background <| Color.rgb 208 207 205
             ]
         ]
 
@@ -104,34 +101,52 @@ wrap toModelFunction subType ( newModel, cmd ) =
 
 view : Model -> Html Msg
 view model =
-    let
-        emptyCell pos =
-            cell { start = pos, width = 1, height = 1, content = el NoStyle [] (text "") }
-    in
     grid GridStyle
-        [ padding 10 ]
-        { columns = [ percent 20, percent 20, percent 20, percent 20, percent 20 ]
-        , rows = [ percent 20, percent 20, percent 20, percent 20, percent 20 ]
+        [ paddingLeft 20, paddingRight 20, paddingTop 10, paddingBottom 10, spacing 35 ]
+        { columns = [ percent 25, percent 25, percent 25, percent 21 ]
+        , rows = [ percent 5, percent 1, percent 40, percent 40 ]
         , cells =
             [ cell
                 { start = ( 0, 0 )
                 , width = 1
-                , height = 5
-                , content = column CellStyle [] [ R.view model.ruterMonitor |> Html.map RuterMonitorMsg |> html ]
+                , height = 1
+                , content = image NoStyle [ height (px 50) ] { src = "https://osloelmday.no/images/knowit.svg", caption = "Knowit logo" }
                 }
             , cell
-                { start = ( 1, 0 )
-                , width = 2
-                , height = 5
-                , content = column CellStyle [] [ K.view model.kantinemeny |> Html.map KantinemenyMsg |> html ]
-                }
-            , emptyCell ( 2, 0 )
-            , emptyCell ( 3, 0 )
-            , cell
-                { start = ( 4, 0 )
+                { start = ( 3, 0 )
                 , width = 1
                 , height = 1
-                , content = column CellStyle [] [ C.view model.clock |> Html.map ClockMsg |> html ]
+                , content = column NoStyle [] [ C.view model.clock |> Html.map ClockMsg |> html ]
+                }
+            , cell
+                { start = ( 0, 1 )
+                , width = 4
+                , height = 1
+                , content = el NoStyle [] <| html <| Html.hr [] []
+                }
+            , cell
+                { start = ( 0, 2 )
+                , width = 2
+                , height = 2
+                , content = el CellStyle [ padding 100 ] (image NoStyle [] { src = "http://sundtcommander.knowit.no/sundt.svg", caption = "Møteromsoversikt" })
+                }
+            , cell
+                { start = ( 2, 2 )
+                , width = 2
+                , height = 1
+                , content = el CellStyle [] (text "Kalender")
+                }
+            , cell
+                { start = ( 2, 3 )
+                , width = 1
+                , height = 1
+                , content = column CellStyle [] [ K.view model.kantinemeny |> Html.map KantinemenyMsg |> html ]
+                }
+            , cell
+                { start = ( 3, 3 )
+                , width = 1
+                , height = 1
+                , content = column CellStyle [] [ R.view model.ruterMonitor |> Html.map RuterMonitorMsg |> html ]
                 }
             ]
         }

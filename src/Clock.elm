@@ -1,10 +1,10 @@
 module Clock exposing (Model, Msg, initModel, subscriptions, update, view)
 
+import Date exposing (..)
 import Element exposing (..)
 import Element.Attributes exposing (..)
 import Html exposing (Html, program)
 import Style exposing (..)
-import Style.Border as Border
 import Style.Font as Font
 import Time exposing (Time, every, second)
 import Time.Format exposing (format)
@@ -36,7 +36,7 @@ initModel =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    every second UpdateNow
+    every Time.second UpdateNow
 
 
 type alias Model =
@@ -45,6 +45,71 @@ type alias Model =
 
 type Msg
     = UpdateNow Time
+
+
+norwegianLabelForDay : Day -> String
+norwegianLabelForDay day =
+    case day of
+        Mon ->
+            "Mandag"
+
+        Tue ->
+            "Tirsdag"
+
+        Wed ->
+            "Onsdag"
+
+        Thu ->
+            "Torsdag"
+
+        Fri ->
+            "Fredag"
+
+        Sat ->
+            "Lørdag"
+
+        Sun ->
+            "Søndag"
+
+
+norwegianLabelForMonth : Month -> String
+norwegianLabelForMonth month =
+    case month of
+        Jan ->
+            "januar"
+
+        Feb ->
+            "februar"
+
+        Mar ->
+            "mars"
+
+        Apr ->
+            "april"
+
+        May ->
+            "mai"
+
+        Jun ->
+            "juni"
+
+        Jul ->
+            "juli"
+
+        Aug ->
+            "august"
+
+        Sep ->
+            "september"
+
+        Oct ->
+            "oktober"
+
+        Nov ->
+            "november"
+
+        Dec ->
+            "desember"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -58,7 +123,29 @@ view : Model -> Html Msg
 view model =
     Element.layout stylesheet <|
         (model
-            |> Maybe.map (format "%H:%M:%S")
+            |> Maybe.map viewTime
             |> Maybe.withDefault "Loading…"
-            |> (\t -> el TimeLabel [ center ] (text t))
+            |> (\t -> el TimeLabel [ alignRight ] (text t))
         )
+
+
+viewTime : Time.Time -> String
+viewTime time =
+    let
+        clock =
+            format "%H:%M" time
+
+        asDate =
+            Date.fromTime time
+
+        date =
+            (norwegianLabelForDay <| dayOfWeek asDate)
+                ++ " "
+                ++ (toString <| day asDate)
+                ++ ". "
+                ++ (norwegianLabelForMonth <| month asDate)
+    in
+    date
+        ++ " "
+        ++ clock
+        |> String.toUpper
