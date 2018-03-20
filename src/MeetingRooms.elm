@@ -1,6 +1,7 @@
 module MeetingRooms exposing (Model, Msg, getRoomsAvailability, initModel, subscriptions, update, view)
 
 import Date exposing (Date)
+import DateFormatting exposing (viewTime)
 import Html exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -152,14 +153,14 @@ viewRoomAvailability room =
             if room.isBusy then
                 "Opptatt til "
                     ++ (room.currentEventEnd
-                            |> Maybe.map toString
+                            |> Maybe.map (\d -> viewTime (Date.toTime d) ++ ".")
                             |> Maybe.withDefault "??"
                        )
             else
                 "Ledig"
                     ++ (room.nextEventStart
-                            |> Maybe.map (\d -> " til " ++ toString d)
-                            |> Maybe.withDefault ", uten senere booking"
+                            |> Maybe.map (\d -> " til " ++ viewTime (Date.toTime d) ++ ".")
+                            |> Maybe.withDefault ", uten senere booking."
                        )
     in
     li []
