@@ -144,7 +144,7 @@ view model =
                 { start = ( 2, 2 )
                 , width = 2
                 , height = 1
-                , content = column CellStyle [] [ M.view model.meetingRooms |> Html.map MeetingRoomsMsg |> html ]
+                , content = column CellStyle [ padding 10 ] [ M.view model.meetingRooms |> Html.map MeetingRoomsMsg |> html ]
                 }
             , cell
                 { start = ( 2, 3 )

@@ -125,24 +125,24 @@ view model =
                         |> List.partition .isBusy
             in
             div []
-                [ h5 [] [ text "Free Rooms:" ]
+                [ h3 [] [ text "Ledige rom" ]
                 , freeRooms
                     |> List.map viewRoomAvailability
-                    |> div []
-                , h5 [] [ text "Busy Rooms:" ]
+                    |> ul []
+                , h3 [] [ text "Opptatte rom" ]
                 , busyRooms
                     |> List.map viewRoomAvailability
-                    |> div []
+                    |> ul []
                 , case model.error of
                     Just errorMsg ->
-                        h4 [] [ text ("Error: " ++ errorMsg) ]
+                        h3 [] [ text ("Error: " ++ errorMsg) ]
 
                     Nothing ->
                         span [] []
                 ]
 
         Nothing ->
-            h5 [] [ text "Loading…" ]
+            h3 [] [ text "Loading…" ]
 
 
 viewRoomAvailability : RoomAvailability -> Html Msg
@@ -150,19 +150,19 @@ viewRoomAvailability room =
     let
         availabilityDesc =
             if room.isBusy then
-                "Busy until "
+                "Opptatt til "
                     ++ (room.currentEventEnd
                             |> Maybe.map toString
                             |> Maybe.withDefault "??"
                        )
             else
-                "Free"
+                "Ledig"
                     ++ (room.nextEventStart
-                            |> Maybe.map (\d -> " until " ++ toString d)
-                            |> Maybe.withDefault ", with no further booking"
+                            |> Maybe.map (\d -> " til " ++ toString d)
+                            |> Maybe.withDefault ", uten senere booking"
                        )
     in
-    p []
+    li []
         [ text
             (room.roomCode
                 ++ " "
