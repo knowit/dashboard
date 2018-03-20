@@ -6,6 +6,7 @@ import Element exposing (..)
 import Element.Attributes exposing (..)
 import Html exposing (Html, program)
 import Kantinemeny as K
+import MeetingRooms as M
 import RuterMonitor as R
 import Style exposing (..)
 import Style.Border as Border
@@ -44,6 +45,7 @@ initialCmd : Cmd Msg
 initialCmd =
     [ R.getAllDepartures |> Cmd.map RuterMonitorMsg
     , K.getMenu |> Cmd.map KantinemenyMsg
+    , M.getRoomsAvailability |> Cmd.map MeetingRoomsMsg
     ]
         |> Cmd.batch
 
@@ -54,6 +56,7 @@ subscriptions model =
         [ C.subscriptions model.clock |> Sub.map ClockMsg
         , R.subscriptions model.ruterMonitor |> Sub.map RuterMonitorMsg
         , K.subscriptions model.kantinemeny |> Sub.map KantinemenyMsg
+        , M.subscriptions model.meetingRooms |> Sub.map MeetingRoomsMsg
         ]
 
 
@@ -62,6 +65,7 @@ initModel =
     { clock = C.initModel
     , ruterMonitor = R.initModel
     , kantinemeny = K.initModel
+    , meetingRooms = M.initModel
     }
 
 
@@ -69,6 +73,7 @@ type alias Model =
     { clock : C.Model
     , ruterMonitor : R.Model
     , kantinemeny : K.Model
+    , meetingRooms : M.Model
     }
 
 
@@ -76,6 +81,7 @@ type Msg
     = ClockMsg C.Msg
     | RuterMonitorMsg R.Msg
     | KantinemenyMsg K.Msg
+    | MeetingRoomsMsg M.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -92,6 +98,10 @@ update msg model =
         KantinemenyMsg kantinemenyMsg ->
             K.update kantinemenyMsg model.kantinemeny
                 |> wrap (\m -> { model | kantinemeny = m }) KantinemenyMsg
+
+        MeetingRoomsMsg meetingRoomsMsg ->
+            M.update meetingRoomsMsg model.meetingRooms
+                |> wrap (\m -> { model | meetingRooms = m }) MeetingRoomsMsg
 
 
 wrap : (b -> c) -> (a -> msg) -> ( b, Cmd a ) -> ( c, Cmd msg )
@@ -134,7 +144,7 @@ view model =
                 { start = ( 2, 2 )
                 , width = 2
                 , height = 1
-                , content = el CellStyle [] (text "Kalender")
+                , content = column CellStyle [ padding 10 ] [ M.view model.meetingRooms |> Html.map MeetingRoomsMsg |> html ]
                 }
             , cell
                 { start = ( 2, 3 )

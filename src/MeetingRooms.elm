@@ -1,15 +1,18 @@
-module MeetingRooms exposing (Model, Msg, initModel, subscriptions, update, view)
+module MeetingRooms exposing (Model, Msg, getRoomsAvailability, initModel, subscriptions, update, view)
 
 import Date exposing (Date)
+import DateFormatting exposing (viewTime)
 import Html exposing (..)
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (decode, required)
 import List exposing (sortBy)
+import Time exposing (Time, every, second)
 
 
 type Msg
     = RoomsAvailabilityResponse (Result Http.Error (List RoomAvailability))
+    | Refresh Time
 
 
 type alias Model =
@@ -65,7 +68,7 @@ initModel =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    every (30 * second) Refresh
 
 
 getRoomsAvailability : Cmd Msg
@@ -73,7 +76,7 @@ getRoomsAvailability =
     let
         url =
             -- Only works on Knowit network or via Knowit VPN
-            -- "/src/MeetingRooms/example_rooms.json"
+            -- "/src/example_data/example_rooms.json"
             "http://10.205.0.5:4422/rooms"
 
         decodeResult : Result x a -> Decoder a
@@ -113,6 +116,9 @@ update msg model =
         RoomsAvailabilityResponse (Err error) ->
             ( { model | error = Just (toString error) }, Cmd.none )
 
+        Refresh _ ->
+            ( model, getRoomsAvailability )
+
 
 view : Model -> Html Msg
 view model =
@@ -125,24 +131,24 @@ view model =
                         |> List.partition .isBusy
             in
             div []
-                [ h5 [] [ text "Free Rooms:" ]
+                [ h3 [] [ text "Ledige rom" ]
                 , freeRooms
                     |> List.map viewRoomAvailability
-                    |> div []
-                , h5 [] [ text "Busy Rooms:" ]
+                    |> ul []
+                , h3 [] [ text "Opptatte rom" ]
                 , busyRooms
                     |> List.map viewRoomAvailability
-                    |> div []
+                    |> ul []
                 , case model.error of
                     Just errorMsg ->
-                        h4 [] [ text ("Error: " ++ errorMsg) ]
+                        h3 [] [ text ("Error: " ++ errorMsg) ]
 
                     Nothing ->
                         span [] []
                 ]
 
         Nothing ->
-            h5 [] [ text "Loading…" ]
+            h3 [] [ text "Loading…" ]
 
 
 viewRoomAvailability : RoomAvailability -> Html Msg
@@ -150,19 +156,19 @@ viewRoomAvailability room =
     let
         availabilityDesc =
             if room.isBusy then
-                "Busy until "
+                "Opptatt til "
                     ++ (room.currentEventEnd
-                            |> Maybe.map toString
+                            |> Maybe.map (\d -> viewTime (Date.toTime d) ++ ".")
                             |> Maybe.withDefault "??"
                        )
             else
-                "Free"
+                "Ledig"
                     ++ (room.nextEventStart
-                            |> Maybe.map (\d -> " until " ++ toString d)
-                            |> Maybe.withDefault ", with no further booking"
+                            |> Maybe.map (\d -> " til " ++ viewTime (Date.toTime d) ++ ".")
+                            |> Maybe.withDefault ", uten senere booking."
                        )
     in
-    p []
+    li []
         [ text
             (room.roomCode
                 ++ " "
