@@ -1,4 +1,4 @@
-module MeetingRooms exposing (Model, Msg, initModel, subscriptions, update, view)
+module MeetingRooms exposing (Model, Msg, getRoomsAvailability, initModel, subscriptions, update, view)
 
 import Date exposing (Date)
 import Html exposing (..)
@@ -73,7 +73,7 @@ getRoomsAvailability =
     let
         url =
             -- Only works on Knowit network or via Knowit VPN
-            -- "/src/MeetingRooms/example_rooms.json"
+            -- "/src/example_data/example_rooms.json"
             "http://10.205.0.5:4422/rooms"
 
         decodeResult : Result x a -> Decoder a
